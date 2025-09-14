@@ -1,0 +1,95 @@
+# Git 相关
+.git
+.gitignore
+.gitattributes
+
+# Python 相关
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+env
+pip-log.txt
+pip-delete-this-directory.txt
+.tox
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+.git
+.mypy_cache
+.pytest_cache
+.hypothesis
+
+# 虚拟环境
+venv/
+ENV/
+env/
+.venv/
+
+# IDE 相关
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 操作系统相关
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# 项目特定
+logs/
+tmp/
+*.tmp
+*.temp
+
+# 文档和说明
+README.md
+CHANGELOG.md
+LICENSE
+*.md
+
+# 测试相关
+tests/
+test_*.py
+*_test.py
+pytest.ini
+.pytest_cache/
+
+# 开发工具配置
+.flake8
+.isort.cfg
+pyproject.toml
+setup.cfg
+
+# Docker 相关
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# 部署相关
+nginx/
+monitoring/
+scripts/
+
+# 模型文件（通常很大，应该通过挂载提供）
+models/
+*.bin
+*.safetensors
+*.ckpt
+*.pth
+
+# 临时和缓存文件
+*.cache
+.cache/
+cache/

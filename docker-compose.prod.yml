@@ -1,0 +1,163 @@
+version: '3.8'
+
+services:
+  qwen-image-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: qwen-image-api-prod
+    ports:
+      - "8000:8000"
+    environment:
+      # 生产环境配置
+      - QWEN_SERVER_HOST=0.0.0.0
+      - QWEN_SERVER_PORT=8000
+      - QWEN_SERVER_MAX_CONCURRENT_REQUESTS=8
+      - QWEN_SERVER_WORKERS=2
+      
+      # 模型配置
+      - QWEN_MODEL_DEVICE=cuda
+      - QWEN_MODEL_TORCH_DTYPE=float16
+      - QWEN_MODEL_ENABLE_OPTIMIZATION=true
+      
+      # 日志配置
+      - QWEN_LOG_LEVEL=WARNING
+      - QWEN_LOG_FILE_PATH=/app/logs/qwen-api.log
+      - QWEN_LOG_REQUESTS=false
+      
+      # 安全配置
+      - QWEN_SECURITY_ENABLE_RATE_LIMIT=true
+      - QWEN_SECURITY_RATE_LIMIT_PER_MINUTE=120
+      - QWEN_SECURITY_VALIDATE_FILE_TYPE=true
+      
+      # 缓存配置
+      - QWEN_CACHE_ENABLED=true
+      - QWEN_CACHE_TYPE=redis
+      - QWEN_CACHE_REDIS_HOST=redis
+      
+      # 监控配置
+      - QWEN_MONITORING_ENABLED=true
+      - QWEN_MONITORING_DETAILED_METRICS=true
+      
+      # 开发配置
+      - QWEN_DEVELOPMENT_DEBUG=false
+      - QWEN_DEVELOPMENT_ENABLE_DOCS=false
+    volumes:
+      - ./config.prod.yaml:/app/config.yaml:ro
+      - ./logs:/app/logs
+      - ./models:/app/models:ro
+      - ./tmp:/app/tmp
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+    deploy:
+      resources:
+        limits:
+          memory: 8G
+          cpus: '4.0'
+        reservations:
+          memory: 4G
+          cpus: '2.0'
+    depends_on:
+      - redis
+    networks:
+      - qwen-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "5"
+
+  redis:
+    image: redis:7-alpine
+    container_name: qwen-redis-prod
+    volumes:
+      - redis_data:/data
+      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf:ro
+    restart: always
+    command: redis-server /usr/local/etc/redis/redis.conf
+    networks:
+      - qwen-network
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "3"
+
+  nginx:
+    image: nginx:alpine
+    container_name: qwen-nginx-prod
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.prod.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - ./logs/nginx:/var/log/nginx
+    depends_on:
+      - qwen-image-api
+    restart: always
+    networks:
+      - qwen-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "5"
+
+  # 监控服务（可选）
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: qwen-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    restart: always
+    networks:
+      - qwen-network
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: qwen-grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin123
+      - GF_USERS_ALLOW_SIGN_UP=false
+    restart: always
+    networks:
+      - qwen-network
+
+volumes:
+  redis_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+
+networks:
+  qwen-network:
+    driver: bridge

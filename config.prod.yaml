@@ -1,0 +1,84 @@
+# Qwen Image API Service 生产环境配置文件
+
+# 模型配置
+model:
+  model_path: "/app/models/qwen-image"
+  device: "cuda"
+  torch_dtype: "float16"
+  max_memory: "6GB"
+  load_timeout: 600
+  enable_optimization: true
+
+# 服务器配置
+server:
+  host: "0.0.0.0"
+  port: 8000
+  max_file_size: 20971520  # 20MB
+  max_concurrent_requests: 8
+  request_timeout: 600
+  enable_cors: true
+  cors_origins: ["https://yourdomain.com", "https://api.yourdomain.com"]
+  workers: 2
+
+# 图像生成默认参数
+generation:
+  default_width: 1024
+  default_height: 1024
+  min_size: 256
+  max_size: 2048
+  default_steps: 25
+  min_steps: 10
+  max_steps: 50
+  default_guidance_scale: 7.5
+  min_guidance_scale: 1.0
+  max_guidance_scale: 15.0
+  default_strength: 0.8
+  supported_formats: ["jpg", "jpeg", "png", "webp"]
+  output_format: "png"
+  output_quality: 95
+
+# 安全配置
+security:
+  enable_rate_limit: true
+  rate_limit_per_minute: 120
+  validate_file_type: true
+  scan_malicious_content: true
+  api_key: null  # 在环境变量中设置
+
+# 日志配置
+log:
+  level: "WARNING"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file_path: "/app/logs/qwen-api.log"
+  max_file_size: 52428800  # 50MB
+  backup_count: 10
+  log_requests: false
+  log_responses: false
+
+# 缓存配置
+cache:
+  enabled: true
+  type: "redis"
+  ttl: 7200
+  max_entries: 10000
+  redis:
+    host: "redis"
+    port: 6379
+    db: 0
+    password: null
+
+# 监控配置
+monitoring:
+  enabled: true
+  metrics_path: "/metrics"
+  health_check: true
+  health_path: "/health"
+  detailed_metrics: true
+
+# 开发配置
+development:
+  debug: false
+  auto_reload: false
+  enable_docs: false
+  docs_url: null
+  openapi_url: null
