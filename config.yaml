@@ -1,0 +1,182 @@
+# Qwen Image API Service 配置文件
+# 
+# 此文件包含了 qwen-image API 服务的所有配置选项
+# 可以通过环境变量覆盖这些配置，环境变量格式：QWEN_<SECTION>_<KEY>
+# 例如：QWEN_MODEL_DEVICE=cuda 会覆盖 model.device 配置
+
+# 模型配置
+model:
+  # 模型文件路径，如果为空则使用模拟实现（用于测试）
+  model_path: ""
+  
+  # 推理设备：cpu, cuda, cuda:0, cuda:1 等
+  device: "cpu"
+  
+  # 数据类型：float16, float32, bfloat16
+  torch_dtype: "float32"
+  
+  # 最大内存限制，例如 "8GB", "4096MB" 或 null（无限制）
+  max_memory: null
+  
+  # 模型加载超时时间（秒）
+  load_timeout: 300
+  
+  # 是否启用模型优化
+  enable_optimization: false
+
+# 服务器配置
+server:
+  # 监听地址
+  host: "0.0.0.0"
+  
+  # 监听端口
+  port: 8000
+  
+  # 最大文件上传大小（字节）
+  max_file_size: 10485760  # 10MB
+  
+  # 最大并发请求数
+  max_concurrent_requests: 4
+  
+  # 请求超时时间（秒）
+  request_timeout: 300
+  
+  # 是否启用 CORS
+  enable_cors: true
+  
+  # 允许的 CORS 源，* 表示允许所有
+  cors_origins: ["*"]
+  
+  # 工作进程数（仅在生产环境使用）
+  workers: 1
+
+# 图像生成默认参数
+generation:
+  # 默认图像尺寸
+  default_width: 512
+  default_height: 512
+  
+  # 尺寸限制
+  min_size: 256
+  max_size: 2048
+  
+  # 默认推理步数
+  default_steps: 20
+  
+  # 步数限制
+  min_steps: 1
+  max_steps: 100
+  
+  # 默认引导强度
+  default_guidance_scale: 7.5
+  
+  # 引导强度限制
+  min_guidance_scale: 1.0
+  max_guidance_scale: 20.0
+  
+  # 图生图默认强度
+  default_strength: 0.8
+  
+  # 支持的图像格式
+  supported_formats: ["jpg", "jpeg", "png", "webp"]
+  
+  # 输出格式
+  output_format: "png"
+  
+  # 输出质量（1-100，仅对 JPEG 有效）
+  output_quality: 95
+
+# 安全配置
+security:
+  # 是否启用速率限制
+  enable_rate_limit: true
+  
+  # 每分钟最大请求数
+  rate_limit_per_minute: 60
+  
+  # 是否验证文件类型
+  validate_file_type: true
+  
+  # 是否扫描恶意内容
+  scan_malicious_content: false
+  
+  # API 密钥（如果设置，则需要在请求头中包含 X-API-Key）
+  api_key: null
+
+# 日志配置
+log:
+  # 日志级别：DEBUG, INFO, WARNING, ERROR, CRITICAL
+  level: "INFO"
+  
+  # 日志格式
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  
+  # 日志文件路径，null 表示只输出到控制台
+  file_path: null
+  
+  # 日志文件最大大小（字节）
+  max_file_size: 10485760  # 10MB
+  
+  # 保留的日志文件数量
+  backup_count: 5
+  
+  # 是否记录请求详情
+  log_requests: true
+  
+  # 是否记录响应详情
+  log_responses: false
+
+# 缓存配置
+cache:
+  # 是否启用缓存
+  enabled: false
+  
+  # 缓存类型：memory, redis
+  type: "memory"
+  
+  # 缓存过期时间（秒）
+  ttl: 3600
+  
+  # 最大缓存条目数
+  max_entries: 1000
+  
+  # Redis 配置（当 type 为 redis 时使用）
+  redis:
+    host: "localhost"
+    port: 6379
+    db: 0
+    password: null
+
+# 监控配置
+monitoring:
+  # 是否启用指标收集
+  enabled: true
+  
+  # 指标端点路径
+  metrics_path: "/metrics"
+  
+  # 是否启用健康检查
+  health_check: true
+  
+  # 健康检查端点路径
+  health_path: "/health"
+  
+  # 是否收集详细指标
+  detailed_metrics: false
+
+# 开发配置
+development:
+  # 是否启用调试模式
+  debug: false
+  
+  # 是否启用自动重载
+  auto_reload: false
+  
+  # 是否启用 API 文档
+  enable_docs: true
+  
+  # API 文档路径
+  docs_url: "/docs"
+  
+  # OpenAPI 规范路径
+  openapi_url: "/openapi.json"
